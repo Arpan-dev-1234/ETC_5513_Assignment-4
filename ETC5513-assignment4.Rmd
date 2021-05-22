@@ -75,3 +75,17 @@ Some interesting findings from the graph:
 - In general, there is a decreasing trend for positive RBT over the years for all states and territories
 
 - Tasmania and Australian Capital Territory remained low positive RBT from 2008 to 2019.
+
+From the number of positive RBT result not really illustrates the , as it depends on the number of conducted RBT for each state. Therefore, the RBT ratio is calculated and been plotted as a line graph.
+```{r RBT-ratio-by-state}
+ratio <- alcohol %>% 
+  mutate(RBT_ratio = Positive.RBT /RBT.conducted *100)  
+
+p2<- ggplot(ratio, aes(x = Year, y = RBT_ratio, group = State))+
+  geom_line(aes(color=State))+
+  geom_point(aes(color=State)) +
+  ggtitle("RBT ratio for each state and territory") +
+  theme_bw()
+  
+ggplotly(p2)
+```
