@@ -54,3 +54,13 @@ library(plotly)
 ```{r loading-data, message=FALSE}
 alcohol <- read.csv("data/bitre_enforcement_data-rbt.csv")
 ```
+
+```{r Overview-of-postiveRBT-by-state, fig.height=8, fig.width=12}
+p1<- ggplot(alcohol, aes(x = Year, y = Positive.RBT, group = State))+
+  geom_line(aes(color=State))+
+  geom_point(aes(color=State)) +
+  ggtitle("Overview of positive RBT") +
+  theme_bw()
+  
+ggplotly(p1)
+```
