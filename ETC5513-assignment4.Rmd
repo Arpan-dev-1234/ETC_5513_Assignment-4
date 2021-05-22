@@ -42,3 +42,15 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r loading-packages}
+library(tidyverse)
+library(plotly)
+```
+
+# How different states and territory RBT results different from each other?
+
+## Introduction
+
+```{r loading-data, message=FALSE}
+alcohol <- read.csv("data/bitre_enforcement_data-rbt.csv")
+```
