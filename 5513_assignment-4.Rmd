@@ -1,0 +1,135 @@
+---
+title: "Carbon Emissions Report"
+author:
+- familyname: Sarkar
+  othernames: Arpan
+  address: India
+  email: "asar0035@student.monash.edu"
+  correspondingauthor: true
+  qualifications: Masters In Business Analytics (Student) 
+- familyname: Cui
+  othernames: Xinyi
+  address: China
+  email: "xcui0006@student.monash.edu"
+  correspondingauthor: true
+  qualifications: Masters In Business Analytics (Student) 
+- familyname: Liu
+  othernames: Yalong
+  address: China
+  email: "yliu0406@student.monash.edu"
+  correspondingauthor: true
+  qualifications:  Masters In Business Analytics (Student)
+department: Business Growth Hackers\newline Arpan Sarkar &\newline Xinyi Cui &\newline Yalong Liu
+organization: World Bank Group
+bibliography: references.bib
+biblio-style: authoryear-comp
+linestretch: 1.5
+output:
+  bookdown::pdf_document2:
+    template: monashreport2.tex
+    fig_caption: yes
+    fig_height: 5
+    fig_width: 8
+    includes:
+      in_header: preamble.tex
+    keep_tex: yes
+    number_sections: yes
+    citation_package: biblatex
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, 
+                      messages = FALSE, 
+                      warning = FALSE)
+```
+
+
+
+```{r echo = FALSE, include = FALSE, messages = FALSE, warning = FALSE}
+library(tidyverse)
+library(readr)
+library(kableExtra)
+library(bookdown)
+library(naniar)
+library(plotly)
+library(tinytex)
+library(explore)
+library(janitor)
+library(dplyr)
+library(rlang)
+```
+
+
+
+
+\section*{Analysis Of Road Accident Fatalties Due To Drug Consumption}
+
+
+```{r}
+drug_test<-read_csv("data/bitre_roadside_drug_testing_data.csv")
+
+drug_test1<-clean_names(drug_test)
+
+drug_test1<-na.omit(drug_test1)
+
+drug_test1$number_of_deaths_from_crashes_involving_a_driver_or_motorcycle_rider_who_had_an_illegal_drug_in_their_system<- as.numeric(drug_test1$number_of_deaths_from_crashes_involving_a_driver_or_motorcycle_rider_who_had_an_illegal_drug_in_their_system)
+
+drug_test1$deaths<- as.numeric(drug_test1$number_of_deaths_from_crashes_involving_a_driver_or_motorcycle_rider_who_had_an_illegal_drug_in_their_system)
+
+drug_test1<-drug_test1%>%select(-number_of_deaths_from_crashes_involving_a_driver_or_motorcycle_rider_who_had_an_illegal_drug_in_their_system)
+
+
+
+
+
+drug_test3<-pivot_longer(drug_test1, cols = c( "road_side_drug_test":"positive_drug_test","deaths"),
+             names_to = "test_and_results_deaths",
+             values_to = "test_and_results_deaths_count")
+
+```
+
+```{r}
+
+drug_test2<-drug_test3%>%group_by(test_and_results_deaths,year)%>% summarise(Avg_test_and_results_deaths_count= mean(test_and_results_deaths_count,na.rm=T))
+
+gg1<-ggplot(drug_test2, aes(x =year , y = Avg_test_and_results_deaths_count, color=test_and_results_deaths)) + 
+  geom_line()+
+  geom_point()
+
+ggplotly(gg1)
+
+drug_test4<-drug_test1%>%group_by(year, state)%>% summarise(avg_deaths= mean(deaths,na.rm=T))
+
+gg2<-ggplot(drug_test4, aes(x =year, y = avg_deaths, color=state)) + 
+  geom_line()+
+  geom_point()
+ggplotly(gg2)
+
+
+figure1<- subplot(gg1,gg2,nrows = 1)
+
+figure1
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
