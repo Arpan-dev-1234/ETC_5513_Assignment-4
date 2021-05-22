@@ -64,3 +64,14 @@ p1<- ggplot(alcohol, aes(x = Year, y = Positive.RBT, group = State))+
   
 ggplotly(p1)
 ```
+
+The graph above presents the positive RBT test result from 2008 to 2019 for each state in Australia. 
+Some interesting findings from the graph:
+
+- The highest positive RBT result was in 2010 **Queensland** of 33638 positive results. 
+
+- Queensland and New South Wales are the two states having the highest number of positive RBT.
+
+- In general, there is a decreasing trend for positive RBT over the years for all states and territories
+
+- Tasmania and Australian Capital Territory remained low positive RBT from 2008 to 2019.
