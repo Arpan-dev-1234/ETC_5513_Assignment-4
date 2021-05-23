@@ -45,14 +45,18 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, eval = TRUE)
 ```{r loading-packages}
 library(tidyverse)
 library(plotly)
+library(broom)
+library(ggResidpanel)
 ```
 
 # How different states and territory RBT results different from each other?
 
-## Introduction
+
 
 ```{r loading-data, message=FALSE}
-alcohol <- read.csv("data/bitre_enforcement_data-rbt.csv")
+alcohol <- read.csv("data/bitre_enforcement_data-rbt.csv") %>% 
+rename("Number_of_crash" = "Number.of.deaths.from.crashes.involving.a.driver.or.motorcycle.rider.with.a.blood.alcohol.concentration..BAC..above.the.legal.limit",
+       "Number_of_death" = "Number.of.drivers.and.motorcycle.riders.killed.with.a.blood.alcohol.concentration..BAC..above.the.legal.limit")
 ```
 
 ```{r Overview-of-postiveRBT-by-state, fig.height=8, fig.width=12}
@@ -76,6 +80,8 @@ Some interesting findings from the graph:
 
 - Tasmania and Australian Capital Territory remained low positive RBT from 2008 to 2019.
 
+
+
 From the number of positive RBT result not really illustrates the , as it depends on the number of conducted RBT for each state. Therefore, the RBT ratio is calculated and been plotted as a line graph.
 ```{r RBT-ratio-by-state}
 ratio <- alcohol %>% 
@@ -89,7 +95,6 @@ p2<- ggplot(ratio, aes(x = Year, y = RBT_ratio, group = State))+
   
 ggplotly(p2)
 ```
-
 The graph above illustrates the positive RBT ration for each state from 2008 to 2019.
 
 It is interesting to see that Queensland is no longer the highest in this figure while the Northern Territory have the highest positive RBT ratio for the past 13 years. All other states and territories have a RBT ratio below 1.5 from 2015, whereas NT stayed 7.8 for 2015.
@@ -97,3 +102,16 @@ It is interesting to see that Queensland is no longer the highest in this figure
 West Australia used to have the second highest RBT ratio in 2008, and it was the second lowest RBT ratio is 2019, it experienced a great improve.
 
 A report released by the Menzies school of research stated that Northern Territory have the highest rates of alcohol consumption per capita in Australia
+
+
+# Is there a relationship between number of death and positive RBT?
+```{r linear-regression}
+ratio <- na.omit(ratio) %>% 
+  mutate(total_death = Number_of_death + Number_of_crash)
+
+p3 <- ggplot(ratio, aes(x = total_death, y = Positive.RBT)) +
+  geom_point()+
+  geom_smooth(method = lm)
+
+ggplotly(p3)
+```
