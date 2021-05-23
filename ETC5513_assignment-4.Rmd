@@ -1,0 +1,127 @@
+---
+title: "Carbon Emissions Report"
+author:
+- familyname: Sarkar
+  othernames: Arpan
+  address: India
+  email: asar0035@student.monash.edu
+  correspondingauthor: true
+  qualifications: Masters In Business Analytics (Student) 
+- familyname: Cui
+  othernames: Xinyi
+  address: China
+  email: xcui0006@student.monash.edu
+  correspondingauthor: true
+  qualifications: Masters In Business Analytics (Student) 
+- familyname: Liu
+  othernames: Yalong
+  address: China
+  email: yliu0406@student.monash.edu
+  correspondingauthor: true
+  qualifications:  Masters In Business Analytics (Student)
+department: Business Growth Hackers\newline Arpan Sarkar &\newline Xinyi Cui &\newline Yalong Liu
+organization: World Bank Group
+bibliography: references.bib
+biblio-style: authoryear-comp
+linestretch: 1.5
+output:
+  bookdown::pdf_document2:
+    template: monashreport2.tex
+    fig_caption: yes
+    fig_height: 5
+    fig_width: 8
+    includes:
+      in_header: preamble.tex
+    keep_tex: yes
+    number_sections: yes
+    citation_package: biblatex
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, 
+                      messages = FALSE, 
+                      warning = FALSE)
+```
+
+```{r echo = FALSE, include = FALSE, messages = FALSE, warning = FALSE}
+library(tidyverse)
+library(readr)
+library(kableExtra)
+library(bookdown)
+library(naniar)
+library(plotly)
+library(tinytex)
+library(explore)
+library(janitor)
+library(dplyr)
+library(rlang)
+```
+
+\section*{Analysis Of Road Accident Fatalties Due To Drug Consumption}
+
+```{r include = FALSE}
+crashes_raw <- read_csv("data/ardd_fatalcrashes_mar2021.csv" )
+fatalities_raw <- read_csv("data/ardd_fatalities_apr_2021.csv")
+christmas_raw <- read_csv("data/australian_christmas_road_deaths.csv") 
+easter_raw <- read.csv("data/australian_easter_road_deaths_2021.csv") 
+```
+
+```{r crashes_tidy, fig.align = "center", fig.width = 6, fig.cap = "Trend of traffic fatalities"}
+crashes_tidy <- crashes_raw %>%
+  select(`Crash ID`, State, Year, Dayweek, `Number Fatalities`, 
+         `Christmas Period`, `Easter Period`, `Day of week`, `Time of day`) %>%
+  filter(Year <= "2020")
+
+crashes_trend <- crashes_tidy %>%
+  group_by(State, Year) %>%
+  summarise(`Number Fatalities` = sum(`Number Fatalities`, na.rm = TRUE))
+
+crashes_trend %>%
+  ggplot(aes(x = Year, 
+             y = `Number Fatalities`,
+             group = State,
+             color = State)) +
+  geom_line(size = 1.5)
+```
+
+
+
+
+
+```{r}
+crashe_c <- crashes_tidy %>% 
+  select(-`Number Fatalities`) %>% 
+  group_by(State, Year) %>% 
+  count()  %>% 
+  rename(`Number Crashes` = n) %>% 
+  mutate(`Number Crashes` = as.double(`Number Crashes`))
+
+crashe_f <- crashes_tidy %>%
+  group_by(State, Year) %>%
+  summarise(`Number Fatalities` = sum(`Number Fatalities`, na.rm = TRUE))
+
+cf <- left_join(crashe_c, crashe_f) %>%
+  pivot_longer(cols = -c(State, Year), names_to = "Types", values_to = "Number")
+
+cf %>%
+  group_by(State, Year, Types) %>%
+  ggplot(aes(x = Year,
+                 y = Number,
+                 group = Types,
+                 fill = Types)) +
+  geom_col() +
+  facet_wrap(~State)
+```
+
+**Two results: main cities have the higher accident. compare with the number of crashes and fatalities**
+
+**change to level**
+
+
+
+
+
+
+
+
