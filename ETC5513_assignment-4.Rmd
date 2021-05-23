@@ -62,7 +62,6 @@ library(rlang)
 
 ```{r include = FALSE}
 crashes_raw <- read_csv("data/ardd_fatalcrashes_mar2021.csv" )
-fatalities_raw <- read_csv("data/ardd_fatalities_apr_2021.csv")
 christmas_raw <- read_csv("data/australian_christmas_road_deaths.csv") 
 easter_raw <- read.csv("data/australian_easter_road_deaths_2021.csv") 
 ```
@@ -111,7 +110,8 @@ cf %>%
                  group = Types,
                  fill = Types)) +
   geom_col() +
-  facet_wrap(~State)
+  facet_wrap(~State) +
+  coord_flip()
 ```
 
 **Two results: main cities have the higher accident. compare with the number of crashes and fatalities**
@@ -122,16 +122,17 @@ cf %>%
 ce_tidy <- left_join(christmas_raw, easter_raw, by = c("Year" = "Year", "Jurisdiction" = "Jurisdiction")) %>%
   rename(C = 	`National.x`, E = `National.y`,
          Christmas = `Count.x`, Easter = `Count.y`) %>%
-  select(-c(C, E)) %>%
+  select(-c(C, E))
+
+ce_count <- ce_tidy %>%
   pivot_longer(cols = c(Christmas, Easter),
                names_to = "Festival",
                values_to = "Count")
 
-
-dfChristmas <- ce_tidy[which(ce_tidy$Festival == "Christmas"),] %>%
+dfChristmas <- ce_count[which(ce_count$Festival == "Christmas"),] %>%
   select(-Festival) %>%
   rename(Christmas = Count)
-dfEaster <- ce_tidy[which(ce_tidy$Festival == "Easter"),] %>%
+dfEaster <- ce_count[which(ce_count$Festival == "Easter"),] %>%
     select(-Festival) %>%
   rename(Easter = Count)
 
@@ -144,6 +145,47 @@ ce_join <- left_join(dfChristmas, dfEaster) %>%
   kable_styling(latex_options = c("striped", "hold_position"))
 ```
 
+```{r}
+crashes_wkd <- crashes_tidy %>%
+  filter(`Christmas Period` == "No",
+         `Easter Period` == "No",
+         `Day of week` == "Weekend") %>%
+  select(State, Year, `Number Fatalities`) %>%
+  rename("Weekdend" = `Number Fatalities`) %>%
+  group_by(State, Year) %>%
+  summarise(Weekdend = mean(Weekdend, na.rm = TRUE))
+
+ce_state <- ce_tidy %>%
+  rename(State = Jurisdiction) %>%
+  mutate(State = recode(State,
+                        `New South Wales` = "NSW",
+                        `Victoria` = "Vic",
+                        `Queensland` = "Qld",
+                        `South Australia` = "SA",
+                        `Western Australia` = "WA",
+                        `Tasmania` = "Tas",
+                        `Northern Territory` = "NT",
+                        `Australian Capital Territory` = "ACT")) 
+ce_all <- left_join(ce_state, crashes_wkd) %>%
+  mutate(Christmas = round((Christmas/12*3), digits=0), 
+         Easter = round((Easter/5*3), digits=0),
+         Weekdend = round((Weekdend*3), digits = 0)) %>%
+  pivot_longer(cols = -c(Year, State),
+               names_to = "Holidays",
+               values_to = "Count") %>%
+  na.omit()
+
+ce_all %>%
+  group_by(Year, State, Holidays)%>%
+  ggplot(aes(x = Year,
+             y = Count,
+             group = Holidays,
+             color = Holidays)) +
+  geom_line() +
+  facet_wrap(~State) +
+  scale_x_continuous(breaks=seq(2007, 2020, 2))
+
+```
 
 
 
