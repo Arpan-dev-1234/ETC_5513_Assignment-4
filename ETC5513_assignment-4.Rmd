@@ -118,6 +118,34 @@ cf %>%
 
 **change to level**
 
+```{r}
+ce_tidy <- left_join(christmas_raw, easter_raw, by = c("Year" = "Year", "Jurisdiction" = "Jurisdiction")) %>%
+  rename(C = 	`National.x`, E = `National.y`,
+         Christmas = `Count.x`, Easter = `Count.y`) %>%
+  select(-c(C, E)) %>%
+  pivot_longer(cols = c(Christmas, Easter),
+               names_to = "Festival",
+               values_to = "Count")
+
+
+dfChristmas <- ce_tidy[which(ce_tidy$Festival == "Christmas"),] %>%
+  select(-Festival) %>%
+  rename(Christmas = Count)
+dfEaster <- ce_tidy[which(ce_tidy$Festival == "Easter"),] %>%
+    select(-Festival) %>%
+  rename(Easter = Count)
+
+ce_join <- left_join(dfChristmas, dfEaster) %>%
+  filter(Year == "2020") %>%
+  select(-Year)
+  knitr::kable(
+  ce_join, booktabs = TRUE,
+  caption = "Road deaths per jurisdiction in 2020") %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+```
+
+
+
 
 
 
