@@ -39,7 +39,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, eval = TRUE)
 ```
 
 ```{r loading-packages}
@@ -89,3 +89,11 @@ p2<- ggplot(ratio, aes(x = Year, y = RBT_ratio, group = State))+
   
 ggplotly(p2)
 ```
+
+The graph above illustrates the positive RBT ration for each state from 2008 to 2019.
+
+It is interesting to see that Queensland is no longer the highest in this figure while the Northern Territory have the highest positive RBT ratio for the past 13 years. All other states and territories have a RBT ratio below 1.5 from 2015, whereas NT stayed 7.8 for 2015.
+
+West Australia used to have the second highest RBT ratio in 2008, and it was the second lowest RBT ratio is 2019, it experienced a great improve.
+
+A report released by the Menzies school of research stated that Northern Territory have the highest rates of alcohol consumption per capita in Australia
