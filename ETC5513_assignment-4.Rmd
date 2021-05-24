@@ -58,13 +58,27 @@ library(dplyr)
 library(rlang)
 ```
 
-\section*{Analysis Of Road Accident Fatalties Due To Drug Consumption}
+\section*{The trend of road fatalities in Australia and the comparison of fatalities on special holidays}
+
+# Introduction
+
+Australia ranks among the top ten in the world in terms of car ownership per capita. With the increasing number of vehicles, traffic accidents also gradually increase.This section will mainly focus on the human aspect. The data is from an Australian government data website. Taking the number of deaths caused by traffic accidents as the main data, explore the difference in the frequency of serious traffic accidents caused by citizens going out at different time nodes.
+
+Research question: 
+
+- What are the trends in the number of road deaths across the Australian states? 
+
+- Are traffic deaths higher on special holidays than on ordinary days?
+
+# Exploratory data analysis
 
 ```{r include = FALSE}
 crashes_raw <- read_csv("data/ardd_fatalcrashes_mar2021.csv" )
 christmas_raw <- read_csv("data/australian_christmas_road_deaths.csv") 
 easter_raw <- read.csv("data/australian_easter_road_deaths_2021.csv") 
 ```
+
+## The trend of road deaths across the Australian states
 
 ```{r crashes_tidy, fig.align = "center", fig.width = 6, fig.cap = "Trend of traffic fatalities"}
 crashes_tidy <- crashes_raw %>%
@@ -84,11 +98,10 @@ crashes_trend %>%
   geom_line(size = 1.5)
 ```
 
+In \@ref(fig:crashes_tidy), New South Wales has always been the state with the highest number of road deaths. The reason of a sharp drop in the number of fatalities in New South Wales and Victoria from 1989 to 1992 is two states successively promulgated regulations on blood alcohol concentration of 0.05. States in remote areas have far fewer fatalities than states with large concentrations of cities.
 
 
-
-
-```{r}
+```{r crashe_c}
 crashe_c <- crashes_tidy %>% 
   select(-`Number Fatalities`) %>% 
   group_by(State, Year) %>% 
@@ -114,11 +127,10 @@ cf %>%
   coord_flip()
 ```
 
-**Two results: main cities have the higher accident. compare with the number of crashes and fatalities**
+In \@ref(fig:crashe_c),there is no significant difference, which indicates that more practical cases are that only one person died in a crash.
 
-**change to level**
 
-```{r}
+```{r ce_tidy}
 ce_tidy <- left_join(christmas_raw, easter_raw, by = c("Year" = "Year", "Jurisdiction" = "Jurisdiction")) %>%
   rename(C = 	`National.x`, E = `National.y`,
          Christmas = `Count.x`, Easter = `Count.y`) %>%
@@ -145,47 +157,46 @@ ce_join <- left_join(dfChristmas, dfEaster) %>%
   kable_styling(latex_options = c("striped", "hold_position"))
 ```
 
+In Table \@ref(tab:ce_tidy), The highest number is 9 in Christmas in Queensland. In the states with more main cities, the number of deaths during the 12-day Christmas holiday is more than double the number during the five-day Easter holiday.
+
 ```{r}
 crashes_wkd <- crashes_tidy %>%
   filter(`Christmas Period` == "No",
          `Easter Period` == "No",
-         `Day of week` == "Weekend") %>%
-  select(State, Year, `Number Fatalities`) %>%
-  rename("Weekdend" = `Number Fatalities`) %>%
-  group_by(State, Year) %>%
-  summarise(Weekdend = mean(Weekdend, na.rm = TRUE))
+         Year %in% c(2008:2020)) %>%
+  select(Year, `Number Fatalities`) %>%
+  rename("Weekday" = `Number Fatalities`) %>%
+  group_by(Year) %>%
+  summarise(Weekday = sum(Weekday, na.rm = TRUE))
 
-ce_state <- ce_tidy %>%
-  rename(State = Jurisdiction) %>%
-  mutate(State = recode(State,
-                        `New South Wales` = "NSW",
-                        `Victoria` = "Vic",
-                        `Queensland` = "Qld",
-                        `South Australia` = "SA",
-                        `Western Australia` = "WA",
-                        `Tasmania` = "Tas",
-                        `Northern Territory` = "NT",
-                        `Australian Capital Territory` = "ACT")) 
-ce_all <- left_join(ce_state, crashes_wkd) %>%
-  mutate(Christmas = round((Christmas/12*3), digits=0), 
-         Easter = round((Easter/5*3), digits=0),
-         Weekdend = round((Weekdend*3), digits = 0)) %>%
-  pivot_longer(cols = -c(Year, State),
-               names_to = "Holidays",
-               values_to = "Count") %>%
-  na.omit()
+ce <- ce_tidy %>%
+  select(-Jurisdiction) %>%
+  group_by(Year) %>%
+  summarise(Christmas = sum(Christmas),
+            Easter = sum(Easter))
 
-ce_all %>%
-  group_by(Year, State, Holidays)%>%
+all_total <- left_join(ce, crashes_wkd, by = "Year")
+
+all_mean <- all_total %>%
+  mutate(Christmas = round((Christmas/12), digits = 0),
+         Easter = round((Easter/5), digits = 0),
+         Weekday = round((Weekday/366), digits = 0))%>%
+  pivot_longer(cols = -Year,
+               names_to = "Types",
+               values_to = "Count") 
+
+all_mean %>%
   ggplot(aes(x = Year,
              y = Count,
-             group = Holidays,
-             color = Holidays)) +
-  geom_line() +
-  facet_wrap(~State) +
-  scale_x_continuous(breaks=seq(2007, 2020, 2))
-
+             color = Types)) +
+  geom_line(size = 1.5) +
+  geom_point(size = 4) +
+  scale_x_continuous(breaks=seq(2008, 2020, 2))
+  ggplotly()
 ```
+
+
+
 
 
 
