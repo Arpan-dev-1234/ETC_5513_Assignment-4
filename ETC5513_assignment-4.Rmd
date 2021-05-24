@@ -95,7 +95,16 @@ crashes_trend %>%
              y = `Number Fatalities`,
              group = State,
              color = State)) +
-  geom_line(size = 1.5)
+  geom_line(size = 1.5) +
+  theme_linedraw() +
+  theme(panel.grid.major.x = element_blank(), 
+          axis.ticks.y = element_blank(),
+          panel.border = element_blank()) +
+  labs(title = "Alcohol per capita (15+) consumption (in litres of pure alcohol) in Spain",
+       legend.position='dodge') +
+  scale_color_brewer(palette = "Set2") +
+  scale_x_continuous(breaks=seq(1989, 2020, 5))
+  ggplotly()
 ```
 
 In \@ref(fig:crashes_tidy), New South Wales has always been the state with the highest number of road deaths. The reason of a sharp drop in the number of fatalities in New South Wales and Victoria from 1989 to 1992 is two states successively promulgated regulations on blood alcohol concentration of 0.05. States in remote areas have far fewer fatalities than states with large concentrations of cities.
@@ -106,12 +115,12 @@ crashe_c <- crashes_tidy %>%
   select(-`Number Fatalities`) %>% 
   group_by(State, Year) %>% 
   count()  %>% 
-  rename(`Number Crashes` = n) %>% 
-  mutate(`Number Crashes` = as.double(`Number Crashes`))
+  rename(Crashes = n) %>% 
+  mutate(Crashes = as.double(Crashes))
 
 crashe_f <- crashes_tidy %>%
   group_by(State, Year) %>%
-  summarise(`Number Fatalities` = sum(`Number Fatalities`, na.rm = TRUE))
+  summarise(Fatalities = sum(`Number Fatalities`, na.rm = TRUE))
 
 cf <- left_join(crashe_c, crashe_f) %>%
   pivot_longer(cols = -c(State, Year), names_to = "Types", values_to = "Number")
@@ -124,7 +133,10 @@ cf %>%
                  fill = Types)) +
   geom_col() +
   facet_wrap(~State) +
-  coord_flip()
+  coord_flip() +
+  labs(title = "Comparison of the number of crashes and fatalities in each state",
+       legend.position='dodge') +
+  scale_color_brewer(palette = "Set2") 
 ```
 
 In \@ref(fig:crashe_c),there is no significant difference, which indicates that more practical cases are that only one person died in a crash.
@@ -191,10 +203,20 @@ all_mean %>%
              color = Types)) +
   geom_line(size = 1.5) +
   geom_point(size = 4) +
+  labs(title = "Comparison of the road fatalities between festivals and weekdays",
+       y = "Number (per day)",
+       legend.position='dodge') +
+  scale_color_brewer(palette = "Set2") +
   scale_x_continuous(breaks=seq(2008, 2020, 2))
   ggplotly()
 ```
+**Holiday deaths are not entirely higher than weekday deaths**
 
+**the number of deaths on special festivals in more years is greater than usual**
+
+**The maximum number of deaths in a single day will not exceed 4**
+
+**The number of road deaths on Christmas and Easter in 2020 is significantly lower than in 2019**
 
 
 
