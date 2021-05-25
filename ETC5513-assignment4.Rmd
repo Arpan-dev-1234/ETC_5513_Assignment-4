@@ -47,6 +47,7 @@ library(tidyverse)
 library(plotly)
 library(broom)
 library(ggResidpanel)
+library(kableExtra)
 ```
 
 # How different states and territory RBT results different from each other?
@@ -115,3 +116,34 @@ p3 <- ggplot(ratio, aes(x = total_death, y = Positive.RBT)) +
 
 ggplotly(p3)
 ```
+
+```{r echo=FALSE}
+model <- lm( total_death ~ Positive.RBT, data = ratio)
+
+glance(model) %>% 
+  kable() %>% 
+  kable_classic()
+```
+The table is the measures of fit of the model. 
+
+- R.squared is 0.818 which is close to 1.
+
+- Adjusted R.squared is 0.815 which is close to 1.
+
+- Relative low AIC and BIC
+
+Therefore, overall a good model
+
+```{r echo=FALSE}
+resid_panel(model, plots = "all")
+```
+
+- Residual plot shows the fluctuation of residuals are big as the dots of residuals are not around 0
+
+- Q-Q plots shows the sample and theoretical quantiles not matched with each other, indicating they are not normal distribution. 
+
+- Histogram and boxplots show there are many outliers in the residuals and the residuals are not normally distributed.
+
+
+
+In conclusion, it is a moderate model according to the diagnostic plots and the fitness of the model. As there is only one dependent variable (postive RBT) in the model which is not enough to explain the independent variable (Number of road death).
