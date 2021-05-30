@@ -50,6 +50,178 @@ library(ggResidpanel)
 library(kableExtra)
 ```
 
+# Introduction
+Road traffic accidents are a serious safety problem faced by all countries. Road traffic accidents are also the main cause of injuries and deaths, and are the tenth leading cause of all deaths in the world.
+
+The causes of road traffic accidents are complex, involving factors such as people, vehicles, and roads. People are the most active factor affecting traffic safety. Because vehicles are driven by people, and roads are used by people. At the same time, according to the World Health Organization, road traffic injuries have become the main cause of death among young people. This shows the seriousness of the impact of road traffic on personal safety.
+
+Our dataset comes from Data Gov Au which is the central source of Australian open government data. Our team selected several different data sets from government data to conduct research and analysis on road deaths in Australia with human factors. 
+The main content includes changes in the trend of road deaths caused by festivals, and road safety issues under the influence of alcohol as any psychoactive substance and any drug.
+
+Research question: 
+
+1. Finding the trend of road fatalities in Australia and the comparison of fatalities on special holidays
+
+2. What is the trend of drug tests conducted from 2010 to 2018 and which state has the maximum number of road fatalities due to drug consumption?
+
+3. What is the trend of positive RBT conducted from 2008 to 2019 and the relationship between positive RBT and number of death?
+
+# Finding the trend of road fatalities in Australia and the comparison of fatalities on special holidays (Yalong Liu)
+
+```{r reading-data, echo = FALSE, message = FALSE, warning = FALSE}
+crashes_raw <- read_csv("data/ardd_fatalcrashes_mar2021.csv" )
+christmas_raw <- read_csv("data/australian_christmas_road_deaths.csv") 
+easter_raw <- read.csv("data/australian_easter_road_deaths_2021.csv") 
+```
+
+## Trend
+```{r crashes_tidy}
+crashes_tidy <- crashes_raw %>%
+  select(`Crash ID`, State, Year, Dayweek, `Number Fatalities`, 
+         `Christmas Period`, `Easter Period`, `Day of week`, `Time of day`) %>%
+  filter(Year <= "2020") %>%
+  rename(States = State)
+
+crashes_trend <- crashes_tidy %>%
+  group_by(States, Year) %>%
+  summarise(`Number Fatalities` = sum(`Number Fatalities`, na.rm = TRUE))
+
+crashes_trend %>%
+  ggplot(aes(x = Year, 
+             y = `Number Fatalities`,
+             color = States)) +
+  geom_line(size = 1.5) +
+  theme_linedraw() +
+  theme(panel.grid.major.x = element_blank(), 
+          axis.ticks.y = element_blank(),
+          panel.border = element_blank()) +
+  labs(title = "The trend of road fatalities across the Australian states",
+       legend.position='dodge') +
+  scale_color_brewer(palette = "Set2") +
+  scale_x_continuous(breaks=seq(1989, 2020, 5))
+  ggplotly()
+```
+  
+In \@ref(fig:crashes_tidy):
+
+- New South Wales has always been the state with the highest number of road deaths. 
+
+- The reason of a sharp drop in the number of fatalities in New South Wales and Victoria from 1989 to 1992 is two states successively promulgated regulations on blood alcohol concentration of 0.05. 
+
+- States in remote areas have far fewer fatalities than states with large concentrations of cities.
+
+## Crashes & Fatalities
+
+```{r crashe_c}
+crashe_c <- crashes_tidy %>% 
+  select(-`Number Fatalities`) %>% 
+  group_by(States, Year) %>% 
+  count()  %>% 
+  rename(Crashes = n) %>% 
+  mutate(Crashes = as.double(Crashes))
+
+crashe_f <- crashes_tidy %>%
+  group_by(States, Year) %>%
+  summarise(Fatalities = sum(`Number Fatalities`, na.rm = TRUE))
+
+cf <- left_join(crashe_c, crashe_f) %>%
+  pivot_longer(cols = -c(States, Year), names_to = "Types", values_to = "Number")
+
+cf %>%
+  group_by(States, Year, Types) %>%
+  ggplot(aes(x = Year,
+                 y = Number,
+                 group = Types,
+                 fill = Types)) +
+  geom_col() +
+  facet_wrap(~States) +
+  coord_flip() +
+  labs(title = "Comparison of the number of crashes and fatalities in each state",
+       legend.position='dodge') +
+  scale_color_brewer(palette = "Set2") 
+```
+In \@ref(fig:crashe_c):
+
+- There is no significant difference.
+
+- More practical cases are that only one person died in a crash.
+
+## Road fatalities in 2020
+
+```{r ce_tidy}
+ce_tidy <- left_join(christmas_raw, easter_raw, by = c("Year" = "Year", "Jurisdiction" = "Jurisdiction")) %>%
+  rename(C = 	`National.x`, E = `National.y`,
+         Christmas = `Count.x`, Easter = `Count.y`) %>%
+  select(-c(C, E))
+
+ce_count <- ce_tidy %>%
+  pivot_longer(cols = c(Christmas, Easter),
+               names_to = "Festival",
+               values_to = "Count")
+
+dfChristmas <- ce_count[which(ce_count$Festival == "Christmas"),] %>%
+  select(-Festival) %>%
+  rename(Christmas = Count)
+dfEaster <- ce_count[which(ce_count$Festival == "Easter"),] %>%
+    select(-Festival) %>%
+  rename(Easter = Count)
+
+ce_join <- left_join(dfChristmas, dfEaster) %>%
+  filter(Year == "2020") %>%
+  select(-Year)
+  knitr::kable(
+  ce_join, booktabs = TRUE,
+  caption = "Road deaths per jurisdiction in 2020") %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+```
+  
+In Table \@ref(tab:ce_tidy):
+- The highest number is 9 in Christmas in Queensland. 
+
+- In the states with more main cities, the number of deaths during the 12-day Christmas holiday is more than double the number during the five-day Easter holiday.
+  
+## Festivals & Ordinary days
+
+```{r crashes_wkd}
+crashes_wkd <- crashes_tidy %>%
+  filter(`Christmas Period` == "No",
+         `Easter Period` == "No",
+         Year %in% c(2008:2020)) %>%
+  select(Year, `Number Fatalities`) %>%
+  rename("Weekday" = `Number Fatalities`) %>%
+  group_by(Year) %>%
+  summarise(Weekday = sum(Weekday, na.rm = TRUE))
+
+ce <- ce_tidy %>%
+  select(-Jurisdiction) %>%
+  group_by(Year) %>%
+  summarise(Christmas = sum(Christmas),
+            Easter = sum(Easter))
+
+all_total <- left_join(ce, crashes_wkd, by = "Year")
+
+all_mean <- all_total %>%
+  mutate(Christmas = round((Christmas/12), digits = 0),
+         Easter = round((Easter/5), digits = 0),
+         Weekday = round((Weekday/366), digits = 0))%>%
+  pivot_longer(cols = -Year,
+               names_to = "Types",
+               values_to = "Count") 
+
+all_mean %>%
+  ggplot(aes(x = Year,
+             y = Count,
+             fill = Types)) +
+  geom_col() +
+  labs(title = "Comparison of the road fatalities between festivals and weekdays",
+       y = "Number (per day)",
+       legend.position='dodge') +
+  scale_fill_brewer(palette = "Set2") +
+  scale_x_continuous(breaks=seq(2008, 2020, 2))
+  ggplotly()
+```
+  
+  
 # How different states and territory RBT results different from each other?
 
 
