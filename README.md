@@ -1,4 +1,3 @@
-
 # Summary of the report
 
 The report was conducted through the use of git hub. 
