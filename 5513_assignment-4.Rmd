@@ -67,7 +67,7 @@ library(rlang)
 
 What is the trend of drug tests conducted from 2010 to 2018 and which state has the maximum number of road fatalities due to drug consumption?
 
-```{r}
+```{r clean}
 drug_test<-read.csv("data/bitre_roadside_drug_testing_data.csv")
 
 drug_test1<-drug_test%>%select(-Licences)
@@ -151,7 +151,7 @@ gg4
 
 
 ## Positive Results And Deaths In Australia
-```{r}
+```{r fig2, fig.cap="Positive Drug Results"}
 subplot(gg6,style(gg5,showlegend=F) ,nrows = 2,titleY = T, titleX = T, margin = 0.14)
 ```
 - Australian Capital Territory has minimum (only a few) drug-positive cases over the years although it shows a little rising after 2014 till 2018. It maintained single digit death count all along from 2014 to 2018 and in line with it low positive drug cases.
