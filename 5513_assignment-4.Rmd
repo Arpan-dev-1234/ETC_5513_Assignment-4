@@ -19,7 +19,7 @@ author:
   email: "yliu0406@student.monash.edu"
   correspondingauthor: true
   qualifications:  Masters In Business Analytics (Student)
-department: Business Growth Hackers\newline Arpan Sarkar &\newline Xinyi Cui &\newline Yalong Liu
+department: ETC_Assignment_4\newline Arpan Sarkar &\newline Xinyi Cui &\newline Yalong Liu
 organization: World Bank Group
 linestretch: 1.5
 output:
