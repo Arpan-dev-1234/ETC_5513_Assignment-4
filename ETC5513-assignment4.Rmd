@@ -1,0 +1,234 @@
+---
+title: "Assignment 4"
+author:
+- familyname: Sarkar
+  othernames: Arpan
+  address: India
+  email: "asar0035@student.monash.edu"
+  correspondingauthor: true
+  qualifications: Masters In Business Analytics (Student) 
+- familyname: Cui
+  othernames: Xinyi
+  address: China
+  email: "xcui0006@student.monash.edu"
+  correspondingauthor: true
+  qualifications: Masters In Business Analytics (Student) 
+- familyname: Liu
+  othernames: Yalong
+  address: China
+  email: "yliu0406@student.monash.edu"
+  correspondingauthor: true
+  qualifications:  Masters In Business Analytics (Student)
+department: Business Growth Hackers\newline Arpan Sarkar &\newline Xinyi Cui &\newline Yalong Liu
+organization: World Bank Group
+bibliography: references.bib
+biblio-style: authoryear-comp
+linestretch: 1.5
+output:
+  bookdown::pdf_document2:
+    template: monashreport2.tex
+    fig_caption: yes
+    fig_height: 5
+    fig_width: 8
+    includes:
+      in_header: preamble.tex
+    keep_tex: yes
+    number_sections: yes
+    citation_package: biblatex
+    toc: yes
+---
+  
+```{r setup, include=FALSE}
+  knitr::opts_chunk$set(echo = FALSE, 
+                        messages = FALSE, 
+                        warning = FALSE)
+```
+  
+  
+
+```{r echo = FALSE, include = FALSE, messages = FALSE, warning = FALSE}
+  library(tidyverse)
+  library(readr)
+  library(kableExtra)
+  library(bookdown)
+  library(naniar)
+  library(plotly)
+  library(tinytex)
+  library(explore)
+  library(janitor)
+  library(dplyr)
+  library(rlang)
+```
+  
+  
+  
+\section*{Analysis Of Road Accident Fatalties Due To Drug Consumption}
+  
+# Accidents Caused Due To Drug Test
+\clearpage
+## Research question
+  
+What is the trend of drug tests conducted from 2010 to 2018 and which state has the maximum number of road fatalities due to drug consumption?
+  
+```{r clean}
+  drug_test<-read.csv("data/bitre_roadside_drug_testing_data.csv")
+  
+  drug_test1<-drug_test%>%select(-Licences)
+  
+  drug_test1<-clean_names(drug_test1)
+  
+  drug_test1<-na.omit(drug_test1)
+  
+  
+  drug_test1$number_of_deaths_from_crashes_involving_a_driver_or_motorcycle_rider_who_had_an_illegal_drug_in_their_system<- as.numeric(drug_test1$number_of_deaths_from_crashes_involving_a_driver_or_motorcycle_rider_who_had_an_illegal_drug_in_their_system)
+  
+  drug_test1$deaths<- as.numeric(drug_test1$number_of_deaths_from_crashes_involving_a_driver_or_motorcycle_rider_who_had_an_illegal_drug_in_their_system)
+  
+  
+  drug_test1<-drug_test1%>%select(-number_of_deaths_from_crashes_involving_a_driver_or_motorcycle_rider_who_had_an_illegal_drug_in_their_system)
+  
+  drug_test1<-drug_test1%>%mutate(Positivity_rate= as.numeric(positive_drug_test/road_side_drug_test , na.rm=T)*100)
+  
+  
+  
+  drug_test3<-pivot_longer(drug_test1, cols = c( "road_side_drug_test":"positive_drug_test"),
+               names_to = "test_and_results",
+               values_to = "test_and_results_count")
+  
+  
+  drug_test2<-drug_test3%>%group_by(test_and_results,year)%>% summarise(test_and_results_count= mean(test_and_results_count,na.rm=T))
+```
+  
+  
+  
+  
+```{r hh, message=FALSE}
+  
+  gg1<-ggplot(drug_test2, aes(x =year , y = test_and_results_count, color=test_and_results)) + 
+    geom_line()+
+    geom_point()+
+    labs(color="test_results",y="drug_tests_count")+
+    scale_color_manual(values = c("#9565a1","#ed1cb9","#edca1c"))+
+    labs(y="DRUG_TESTS_COUNT", x="YEARS")+
+    ggtitle("Count Of Drug Tests And Positive Results")+
+    theme_bw()
+  gg4<-ggplotly(gg1)
+  
+  
+  drug_test4<-drug_test1%>%group_by(year, state)%>% summarise(deaths= mean(deaths,na.rm=T))
+  
+  gg2<-ggplot(drug_test4, aes(x =year, y = deaths, color=state)) + 
+    geom_line()+
+    geom_point()+
+    labs(y="DEATHS", x="YEARS")+
+    ggtitle("Positive cases and Deaths In Five States Of Australia")+
+    theme_bw()
+  gg5<-ggplotly(gg2)
+  
+  
+  
+  gg3<-ggplot(drug_test1, aes(x=year,y=positive_drug_test , color=state)) + 
+    geom_line()+
+    geom_point()+
+    labs(y="POSITIVE_DRUG_TEST", x="YEARS")+
+    theme_bw()
+  gg6<-ggplotly(gg3)  
+  
+  
+  
+  
+```
+  
+  
+```{r g2g4, fig.align = "center", fig.width = 6,fig.cap= "Mission Status-Country Wise"}
+  gg4
+```
+  
+- Above Figure \@ref(fig:g2g4)  drawn with year wise data of drug testing and positive cases. The diagram is drawn with data of all states combined. The following observations worth noticing.
+  
+- Number of tests started declining from **33000** in 2010 to **20000** in 2012. For two more years, the level of tests maintained as about **20000 tests / year**.
+  
+- From 2014 number of tests was increased gradually and in 2018 reached the level of **50000 / year**.
+  
+- The positive cases fond to be minimal till 2014. Thereafter it gradually started rising almost in the same proportion to that of the tests undertaken and reached about **6300 / year** in 2018.
+  
+  
+## Positive Results And Deaths In Australia
+```{r fig2, fig.cap="Positive Drug Results"}
+  subplot(gg6,style(gg5,showlegend=F) ,nrows = 2,titleY = T, titleX = T, margin = 0.14)
+```
+- Australian Capital Territory has minimum (only a few) drug-positive cases over the years although it shows a little rising after 2014 till 2018. It maintained single digit death count all along from 2014 to 2018 and in line with it low positive drug cases.
+  
+- Tasmania recorded another low (but higher than ACT) in drug positive count since 2007 to 2012 and thereafter rose to as high as **2200** in 2015 and maintained almost same rate till 2018. Death cases fell from **19** in 2007 to about **4** in 2012, then rose to **8** in 2014 but fell sharply to zero in 2015 and then rose to 10 in 2016 and fell to single digit in 2018.
+  
+- SA positive cases rose almost diagonally till **600** to **5000+** and then it decreased to about **4300** in 2016 and then again rose to **5000+** in 2018. SA has shown the death count as between 10 to 21 through out with a **rise-fall-rise-fall** pattern all along.
+  
+- NSW maintained almost similar pattern as lie TAS from 2010 to 2012 and then started rising and reached the peak with **9123** cases in 2015. Positive cases got reduced for 2016 but rose to the high value of **9273** in next year i.e., 2017. The state recorded maximum death count. From 53 in 2010 to **42** in 2011 to **52** in 2013 to suddenly rose to above **80** in 2016, but by 2018 the figure is reduced to **70**.
+  
+- QLD showing very exceptional result. From almost zero in 2009, it rose gradually to 2014 and then started rising very sharply to just below **15000** in 2018. The lowest (almost zero all along) death cases recorded by the state is a great achievement by the state despite having the highest drug-positive cases.
+  
+\clearpage
+## Relationship Of Deaths And Positive Drug Test
+  
+```{r}
+  tab1<-drug_test1%>%group_by(state,year)%>%summarise(avg_road_side_drug_test=mean(road_side_drug_test), avg_positive_drug_test= mean(positive_drug_test), avg_deaths=mean(deaths))%>%arrange(-avg_deaths)
+  
+  ggmod<-ggplot(tab1, aes(x = avg_positive_drug_test, y =avg_deaths)) +
+    geom_point()+
+    geom_smooth(method ='loess', color= "green")+
+    labs(x="POSITIVE_DRUG_TEST", y="DEATHS")+
+    theme_bw()
+  
+  ggplotly(ggmod)
+  
+  mod<- lm(deaths~positive_drug_test, data = drug_test1)
+  
+  
+```
+  
+- Fitted a local regression model to check the relationship between deaths and positive drug tests.
+  
+- We can see there is a lot of variation in the line, and thus explains there is no linear relationship between **DEATHS** and **POSITIVE DRUG TESTS**.
+  
+  
+## Consolidated data of number of tests, positive cases and average death cases for getting a view of overall status.
+  
+```{r message=FALSE}
+  knitr::kable(drug_test1%>%group_by(state,year)%>%summarise(avg_road_side_drug_test=mean(road_side_drug_test), avg_positive_drug_test= mean(positive_drug_test), avg_deaths=mean(deaths))%>%arrange(-avg_deaths), caption = "Tabular representation of consolidated data")%>%
+     kable_classic("hover", full_width = T)%>%
+    kable_styling(full_width = T, position = "left")%>%
+    scroll_box(width = "800px", height = "400px")
+  
+  
+  
+```
+  
+  
+```{r tab1}
+  knitr::kable(broom::glance(mod)%>%select(r.squared,adj.r.squared,AIC,BIC,deviance), caption = "Model Statistics")%>%
+     kable_classic("hover", full_width = T)%>%
+    kable_styling(full_width = T, position = "left")
+```
+  
+  - R-square value tells us how much accurate our model is \@ref(tab:tab1).
+  
+  - 0.11 R-square means that the model explains only 11% of variation within the data.
+  
+  - It indicates that our independent variable is not explaining much in the variation of our dependent variable, regardless of the variable significance.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
