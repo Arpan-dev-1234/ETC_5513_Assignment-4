@@ -1,47 +1,21 @@
 ---
-title: "Causes Of Road Fatalties"
-author:
-- familyname: Sarkar
-  othernames: Arpan
-  address: India
-  email: "asar0035@student.monash.edu"
-  correspondingauthor: true
-  qualifications: Masters In Business Analytics (Student) 
-- familyname: Cui
-  othernames: Xinyi
-  address: China
-  email: "xcui0006@student.monash.edu"
-  correspondingauthor: true
-  qualifications: Masters In Business Analytics (Student) 
-- familyname: Liu
-  othernames: Yalong
-  address: China
-  email: "yliu0406@student.monash.edu"
-  correspondingauthor: true
-  qualifications:  Masters In Business Analytics (Student)
-department: ETC_Assignment_4\newline Arpan Sarkar &\newline Xinyi Cui &\newline Yalong Liu
-organization: MONASH UNIVERSITY
-linestretch: 1.5
-output:
-  bookdown::pdf_document2:
-    template: monashreport2.tex
+title: "Causes of Road Fatalities"
+subtitle: ETC5513-ASSIGNMENT4
+author: "TEAM_9"
+date: '`r Sys.Date()`'
+output: 
+  bookdown::html_document2:
+    toc: yes
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
     fig_caption: yes
     fig_height: 5
-    fig_width: 8
+    fig_width: 8  
+    css: monashreport.css
     includes:
-      in_header: preamble.tex
-    keep_tex: yes
-    number_sections: yes
-    toc: yes
+      before_body: header.html
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, 
-                      messages = FALSE, 
-                      warning = FALSE)
-```
-
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
@@ -83,7 +57,7 @@ These are the research questions we analysis:
 ```{r reading-data, echo = FALSE, message = FALSE, warning = FALSE}
 crashes_raw <- read_csv("data/ardd_fatalcrashes_mar2021.csv" )
 christmas_raw <- read_csv("data/australian_christmas_road_deaths.csv") 
-easter_raw <- read.csv("data/australian_easter_road_deaths_2021.csv") 
+easter_raw <- read_csv("data/australian_easter_road_deaths_2021.csv") 
 ```
 
 ## Trend
@@ -97,8 +71,10 @@ crashes_tidy <- crashes_raw %>%
 crashes_trend <- crashes_tidy %>%
   group_by(States, Year) %>%
   summarise(`Number Fatalities` = sum(`Number Fatalities`, na.rm = TRUE))
+```
 
-crashes_trend %>%
+```{r}
+f1 <- crashes_trend %>%
   ggplot(aes(x = Year, 
              y = `Number Fatalities`,
              color = States)) +
@@ -111,7 +87,7 @@ crashes_trend %>%
        legend.position='dodge') +
   scale_color_brewer(palette = "Set2") +
   scale_x_continuous(breaks=seq(1989, 2020, 5))
-  ggplotly()
+  ggplotly(f1)
 ```
 
 Findings:
@@ -224,18 +200,17 @@ all_mean <- all_total %>%
                names_to = "Types",
                values_to = "Count") 
 
-all_mean %>%
+f3 <- all_mean %>%
   ggplot(aes(x = Year,
              y = Count,
-             color = Types)) +
-  geom_line(size = 1.5) +
-  geom_point(size = 4) +
+             fill = Types)) +
+  geom_col() +
   labs(title = "Comparison of the road fatalities between festivals and weekdays",
        y = "Number (per day)",
        legend.position='dodge') +
-  scale_color_brewer(palette = "Set2") +
+  scale_fill_brewer(palette = "Set2") +
   scale_x_continuous(breaks=seq(2008, 2020, 2))
-  ggplotly()
+  ggplotly(f3)
 ```
 
 Findings:
