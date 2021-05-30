@@ -1,5 +1,5 @@
 ---
-title: "Carbon Emissions Report"
+title: "Causes Of Road Fatalties"
 author:
 - familyname: Sarkar
   othernames: Arpan
@@ -43,13 +43,17 @@ knitr::opts_chunk$set(echo = FALSE,
 
 
 
-```{r echo = FALSE, include = FALSE, messages = FALSE, warning = FALSE}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
 library(tidyverse)
-library(readr)
+library(plotly)
+library(broom)
+library(ggResidpanel)
 library(kableExtra)
+library(readr)
 library(bookdown)
 library(naniar)
-library(plotly)
 library(tinytex)
 library(explore)
 library(janitor)
@@ -57,17 +61,197 @@ library(dplyr)
 library(rlang)
 ```
 
+# Introduction
+Road traffic accidents are a serious safety problem faced by all countries. Road traffic accidents are also the main cause of injuries and deaths, and are the tenth leading cause of all deaths in the world.
+
+The causes of road traffic accidents are complex, involving factors such as people, vehicles, and roads. People are the most active factor affecting traffic safety. Because vehicles are driven by people, and roads are used by people. At the same time, according to the World Health Organization, road traffic injuries have become the main cause of death among young people. This shows the seriousness of the impact of road traffic on personal safety.
+
+Our dataset comes from Data Gov Au which is the central source of Australian open government data. Our team selected several different data sets from government data to conduct research and analysis on road deaths in Australia with human factors. 
+The main content includes changes in the trend of road deaths caused by festivals, and road safety issues under the influence of alcohol as any psychoactive substance and any drug.
+
+These are the research questions we analysis:
+
+1. Finding the trend of road fatalities in Australia and the comparison of fatalities on special holidays
+
+2. What is the trend of drug tests conducted from 2010 to 2018 and which state has the maximum number of road fatalities due to drug consumption?
+
+3. What is the trend of positive RBT conducted from 2008 to 2019 and the relationship between positive RBT and number of death?
 
 
-\section*{Analysis Of Road Accident Fatalties Due To Drug Consumption}
 
-# Accidents Caused Due To Drug Test
-\clearpage
-## Research question
+# Finding the trend of road fatalities in Australia and the comparison of fatalities on special holidays (Yalong Liu)
+```{r reading-data, echo = FALSE, message = FALSE, warning = FALSE}
+crashes_raw <- read_csv("data/ardd_fatalcrashes_mar2021.csv" )
+christmas_raw <- read_csv("data/australian_christmas_road_deaths.csv") 
+easter_raw <- read.csv("data/australian_easter_road_deaths_2021.csv") 
+```
 
-What is the trend of drug tests conducted from 2010 to 2018 and which state has the maximum number of road fatalities due to drug consumption?
+## Trend
+```{r crashes_tidy, echo = FALSE, message = FALSE, warning = FALSE}
+crashes_tidy <- crashes_raw %>%
+  select(`Crash ID`, State, Year, Dayweek, `Number Fatalities`, 
+         `Christmas Period`, `Easter Period`, `Day of week`, `Time of day`) %>%
+  filter(Year <= "2020") %>%
+  rename(States = State)
 
-```{r clean}
+crashes_trend <- crashes_tidy %>%
+  group_by(States, Year) %>%
+  summarise(`Number Fatalities` = sum(`Number Fatalities`, na.rm = TRUE))
+
+crashes_trend %>%
+  ggplot(aes(x = Year, 
+             y = `Number Fatalities`,
+             color = States)) +
+  geom_line(size = 1.5) +
+  theme_linedraw() +
+  theme(panel.grid.major.x = element_blank(), 
+          axis.ticks.y = element_blank(),
+          panel.border = element_blank()) +
+  labs(title = "The trend of road fatalities across the Australian states",
+       legend.position='dodge') +
+  scale_color_brewer(palette = "Set2") +
+  scale_x_continuous(breaks=seq(1989, 2020, 5))
+  ggplotly()
+```
+
+Findings:
+
+- New South Wales has always been the state with the highest number of road deaths. 
+
+- The reason of a sharp drop in the number of fatalities in New South Wales and Victoria from 1989 to 1992 is two states successively promulgated regulations on blood alcohol concentration of 0.05. 
+
+- States in remote areas have far fewer fatalities than states with large concentrations of cities.
+
+
+## Crashes & Fatalities
+
+```{r crashe_c, echo = FALSE, message = FALSE, warning = FALSE}
+crashe_c <- crashes_tidy %>% 
+  select(-`Number Fatalities`) %>% 
+  group_by(States, Year) %>% 
+  count()  %>% 
+  rename(Crashes = n) %>% 
+  mutate(Crashes = as.double(Crashes))
+
+crashe_f <- crashes_tidy %>%
+  group_by(States, Year) %>%
+  summarise(Fatalities = sum(`Number Fatalities`, na.rm = TRUE))
+
+cf <- left_join(crashe_c, crashe_f) %>%
+  pivot_longer(cols = -c(States, Year), names_to = "Types", values_to = "Number")
+
+cf %>%
+  group_by(States, Year, Types) %>%
+  ggplot(aes(x = Year,
+                 y = Number,
+                 group = Types,
+                 fill = Types)) +
+  geom_col() +
+  facet_wrap(~States) +
+  coord_flip() +
+  labs(title = "Comparison of the number of crashes and fatalities in each state",
+       legend.position='dodge') +
+  scale_color_brewer(palette = "Set2") 
+```
+
+Findings:
+
+- There is no significant difference.
+
+- More practical cases are that only one person died in a crash.
+
+
+## Road fatalities in 2020
+
+```{r ce_tidy, echo = FALSE, message = FALSE, warning = FALSE}
+ce_tidy <- left_join(christmas_raw, easter_raw, by = c("Year" = "Year", "Jurisdiction" = "Jurisdiction")) %>%
+  rename(C = 	`National.x`, E = `National.y`,
+         Christmas = `Count.x`, Easter = `Count.y`) %>%
+  select(-c(C, E))
+
+ce_count <- ce_tidy %>%
+  pivot_longer(cols = c(Christmas, Easter),
+               names_to = "Festival",
+               values_to = "Count")
+
+dfChristmas <- ce_count[which(ce_count$Festival == "Christmas"),] %>%
+  select(-Festival) %>%
+  rename(Christmas = Count)
+dfEaster <- ce_count[which(ce_count$Festival == "Easter"),] %>%
+    select(-Festival) %>%
+  rename(Easter = Count)
+
+ce_join <- left_join(dfChristmas, dfEaster) %>%
+  filter(Year == "2020") %>%
+  select(-Year)
+  knitr::kable(
+  ce_join, booktabs = TRUE,
+  caption = "Road deaths per jurisdiction in 2020") %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+```
+
+Findings:
+- The highest number is 9 in Christmas in Queensland. 
+
+- In the states with more main cities, the number of deaths during the 12-day Christmas holiday is more than double the number during the five-day Easter holiday.
+
+
+## Festivals & Ordinary days
+
+```{r crashes_wkd, echo = FALSE, message = FALSE, warning = FALSE}
+crashes_wkd <- crashes_tidy %>%
+  filter(`Christmas Period` == "No",
+         `Easter Period` == "No",
+         Year %in% c(2008:2020)) %>%
+  select(Year, `Number Fatalities`) %>%
+  rename("Weekday" = `Number Fatalities`) %>%
+  group_by(Year) %>%
+  summarise(Weekday = sum(Weekday, na.rm = TRUE))
+
+ce <- ce_tidy %>%
+  select(-Jurisdiction) %>%
+  group_by(Year) %>%
+  summarise(Christmas = sum(Christmas),
+            Easter = sum(Easter))
+
+all_total <- left_join(ce, crashes_wkd, by = "Year")
+
+all_mean <- all_total %>%
+  mutate(Christmas = round((Christmas/12), digits = 0),
+         Easter = round((Easter/5), digits = 0),
+         Weekday = round((Weekday/366), digits = 0))%>%
+  pivot_longer(cols = -Year,
+               names_to = "Types",
+               values_to = "Count") 
+
+all_mean %>%
+  ggplot(aes(x = Year,
+             y = Count,
+             color = Types)) +
+  geom_line(size = 1.5) +
+  geom_point(size = 4) +
+  labs(title = "Comparison of the road fatalities between festivals and weekdays",
+       y = "Number (per day)",
+       legend.position='dodge') +
+  scale_color_brewer(palette = "Set2") +
+  scale_x_continuous(breaks=seq(2008, 2020, 2))
+  ggplotly()
+```
+
+Findings:
+
+- Holiday deaths are not entirely higher than weekday deaths.
+
+- The number of deaths on special festivals in more years is greater than usual.
+
+- The maximum number of deaths in a single day will not exceed 4.
+
+- The number of road deaths on Christmas and Easter in 2020 is significantly lower than in 2019.
+
+
+# What is the trend of drug tests conducted from 2010 to 2018 and which state has the maximum number of road fatalities due to drug consumption? (Arpan Sarkar)
+
+```{r}
 drug_test<-read.csv("data/bitre_roadside_drug_testing_data.csv")
 
 drug_test1<-drug_test%>%select(-Licences)
@@ -95,9 +279,6 @@ drug_test3<-pivot_longer(drug_test1, cols = c( "road_side_drug_test":"positive_d
 
 drug_test2<-drug_test3%>%group_by(test_and_results,year)%>% summarise(test_and_results_count= mean(test_and_results_count,na.rm=T))
 ```
-
-
-
 
 ```{r hh, message=FALSE}
 
@@ -136,6 +317,7 @@ gg6<-ggplotly(gg3)
 
 ```
 
+## Drug Test Results Trend
 
 ```{r g2g4, fig.align = "center", fig.width = 6,fig.cap= "Mission Status-Country Wise"}
 gg4
@@ -151,9 +333,11 @@ gg4
 
 
 ## Positive Results And Deaths In Australia
-```{r fig2, fig.cap="Positive Drug Results"}
+```{r}
 subplot(gg6,style(gg5,showlegend=F) ,nrows = 2,titleY = T, titleX = T, margin = 0.14)
 ```
+
+
 - Australian Capital Territory has minimum (only a few) drug-positive cases over the years although it shows a little rising after 2014 till 2018. It maintained single digit death count all along from 2014 to 2018 and in line with it low positive drug cases.
 
 - Tasmania recorded another low (but higher than ACT) in drug positive count since 2007 to 2012 and thereafter rose to as high as **2200** in 2015 and maintained almost same rate till 2018. Death cases fell from **19** in 2007 to about **4** in 2012, then rose to **8** in 2014 but fell sharply to zero in 2015 and then rose to 10 in 2016 and fell to single digit in 2018.
@@ -164,7 +348,7 @@ subplot(gg6,style(gg5,showlegend=F) ,nrows = 2,titleY = T, titleX = T, margin = 
 
 - QLD showing very exceptional result. From almost zero in 2009, it rose gradually to 2014 and then started rising very sharply to just below **15000** in 2018. The lowest (almost zero all along) death cases recorded by the state is a great achievement by the state despite having the highest drug-positive cases.
 
-\clearpage
+
 ## Relationship Of Deaths And Positive Drug Test
 
 ```{r}
@@ -186,6 +370,7 @@ mod<- lm(deaths~positive_drug_test, data = drug_test1)
 - Fitted a local regression model to check the relationship between deaths and positive drug tests.
 
 - We can see there is a lot of variation in the line, and thus explains there is no linear relationship between **DEATHS** and **POSITIVE DRUG TESTS**.
+
 
 
 ## Consolidated data of number of tests, positive cases and average death cases for getting a view of overall status.
@@ -213,19 +398,175 @@ knitr::kable(broom::glance(mod)%>%select(r.squared,adj.r.squared,AIC,BIC,devianc
 
 - It indicates that our independent variable is not explaining much in the variation of our dependent variable, regardless of the variable significance.
 
+# What is the trend of positive RBT conducted from 2008 to 2019 and the relationship between positive RBT and number of death? (Xinyi Cui)
+
+## RBT results for each state
+
+```{r loading-data, message=FALSE, echo=FALSE}
+alcohol <- read.csv("data/bitre_enforcement_data-rbt.csv") %>% 
+rename("Number_of_crash" = "Number.of.deaths.from.crashes.involving.a.driver.or.motorcycle.rider.with.a.blood.alcohol.concentration..BAC..above.the.legal.limit",
+       "Number_of_death" = "Number.of.drivers.and.motorcycle.riders.killed.with.a.blood.alcohol.concentration..BAC..above.the.legal.limit")
+```
+
+```{r Overview-of-postiveRBT-by-state, echo=FALSE}
+p1<- ggplot(alcohol, aes(x = Year, y = Positive.RBT, group = State))+
+  geom_line(aes(color=State))+
+  geom_point(aes(color=State)) +
+  ggtitle("Overview of positive RBT") +
+  theme_bw()
+  
+ggplotly(p1)
+```
+
+The first graph presents the positive random breath test (RBT) test result from 2008 to 2019 for each state and territory in Australia. 
+
+- The highest positive RBT result was in 2010 **Queensland** of 33638 positive results. 
+
+- **Queensland** and **New South Wales** are the two states having the highest number of positive RBT.
+
+- In general, there is a decreasing trend for positive RBT over the years for all states and territories
+
+- **Tasmania** and **Australian Capital Territory** remained low positive RBT from 2008 to 2019.
 
 
 
+## RBT ratio for each state
+```{r RBT-ratio-by-state, echo=FALSE}
+ratio <- alcohol %>% 
+  mutate(RBT_ratio = Positive.RBT /RBT.conducted *100)  
+
+p2<- ggplot(ratio, aes(x = Year, y = RBT_ratio, group = State))+
+  geom_line(aes(color=State))+
+  geom_point(aes(color=State)) +
+  ggtitle("RBT ratio for each state and territory") +
+  theme_bw()
+  
+ggplotly(p2)
+```
+
+The second graph illustrates the positive RBT ratio for each state and territory in Australia from 2008 to 2019. RBT ratio is calculated by the number of positive RBT divided by the total number of RBT conducted.
+
+- Queensland is no longer the highest in this figure while the **Northern Territory** have the highest positive RBT ratio for the past 13 years. 
+
+- All other states and territories have a RBT ratio below 1.5 from 2015, whereas NT stayed 7.8 for 2015.
+
+- **West Australia** used to have the second highest RBT ratio in 2008, and it was the second lowest RBT ratio is 2019, it experienced a great improve.
+
+- A report released by the Menzies school of research stated that **Northern Territory** have the highest rates of alcohol consumption per capita in Australia
+
+
+## Regression model
+```{r linear-regression, echo=FALSE}
+ratio <- na.omit(ratio) %>% 
+  mutate(Total_death = Number_of_death + Number_of_crash)
+
+p3 <- ggplot(ratio, aes(x =Positive.RBT  , y = Total_death)) +
+  geom_point()+
+  geom_smooth(method = lm)
+
+ggplotly(p3)
+```
+Find the relationship between positive RBT and number of death. THen fit a linear model to the number of death and positive RBT,
+
+- There is a **positive linear** relationship that higher the positive RBT higher the number of total death (deaths with a BAC above legal limit).
+
+
+## Model fitness
+```{r echo=FALSE}
+model <- lm( Total_death ~ Positive.RBT, data = ratio)
+
+glance(model) %>% 
+  kable() %>% 
+  kable_classic()
+```
+
+The table is the measures of fit of the model. 
+
+- R.squared is 0.818 which is close to 1.
+
+- Adjusted R.squared is 0.815 which is close to 1.
+
+- Relative low AIC and BIC
+
+## Residual panel
+```{r echo=FALSE}
+resid_panel(model, plots = "all")
+```
+
+- Residual plot shows the fluctuation of residuals are big as the dots of residuals are not around 0
+
+- Q-Q plots shows the sample and theoretical quantiles not matched with each other, indicating they are not normal distribution. 
+
+- Histogram and boxplots show there are many outliers in the residuals and the residuals are not normally distributed.
 
 
 
+In conclusion, it is a moderate model according to the diagnostic plots and the fitness of the model. As there is only one dependent variable (postive RBT) in the model which is not enough to explain the independent variable (Number of road death).
+
+# Conclusion 
+- Drug use is increasingly associated with road accidents. While alcohol and illicit substances dominate, a number of prescription drugs contribute to injury and death. Most drugs do not significantly increase the risks of accidents if they are taken as prescribed, however a number of commonly used drugs can impair the ability to drive safely. Awareness that some drugs affect driving will help to reduce their potential impact on road safety.
+
+- Alcohol continues to be the most prevalent drug causing road trauma. In Australia, its prevalence in road fatalities is 25-30% depending on the jurisdiction. The average blood alcohol concentration in fatal accidents is over 0.15%.
+
+- Christmas time of year is one of the most high risk times on Australia Roads with many people hitting the road to attend Christmas parties, end of year celebrations, and heading towards the coast for a well-deserved break. Driver’s must remember that travelling during holiday periods can be more risky because of increased traffic volumes, congestion, tiredness, people driving in unfamiliar environments, and a higher number of people who are driving under the influence of alcohol.
 
 
+- Unfortunately, road accidents and fatalities over the Christmas period are often significantly worse than the rest of the year.
 
+# Reference
+[1] Chelsea Heaney (2019) Do Darwin residents really drink more than other Australians? from https://www.abc.net.au/news/2019-03-05/curious-darwin-does-darwin-really-the-drink-the-most-alcohol/10867768
 
+[2] C. Sievert. Interactive Web-Based Data Visualization with R, plotly, and shiny. Chapman and Hall/CRC Florida, 2020.
 
+[3] David Robinson, Alex Hayes and Simon Couch (2021). broom: Convert Statistical Objects into Tidy Tibbles. R package
+  version 0.7.5. https://CRAN.R-project.org/package=broom
 
+[4] Hadley Wickham, Romain François, Lionel Henry and Kirill Müller (2021). dplyr: A Grammar of Data Manipulation. R
+  package version 1.0.5. https://CRAN.R-project.org/package=dplyr
 
+[5] Hao Zhu (2021). kableExtra: Construct Complex Table with 'kable' and Pipe Syntax. R package version 1.3.4.
+  https://CRAN.R-project.org/package=kableExtra
 
+[6] Katherine Goode and Kathleen Rey (2019). ggResidpanel: Panels and Interactive Versions of Diagnostic Plots using
+  'ggplot2'. R package version 0.3.0. https://CRAN.R-project.org/package=ggResidpanel
 
+[7] Lionel Henry and Hadley Wickham (2021). rlang: Functions for Base Types and Core R and 'Tidyverse' Features. R
+  package version 0.4.11. https://CRAN.R-project.org/package=rlang
 
+[8] Nicholas Tierney, Di Cook, Miles McBain and Colin Fay (2020). naniar: Data Structures, Summaries, and Visualisations
+  for Missing Data. R package version 0.6.0. https://CRAN.R-project.org/package=naniar
+  
+[9] Olaf H Drummer (2008) The role of drugs in road safety. From https://www.nps.org.au/australian-prescriber/articles/the-role-of-drugs-in-road-safety
+
+[10] Richard Iannone, JJ Allaire and Barbara Borges (2020). flexdashboard: R Markdown Format for Flexible Dashboards. R
+  package version 0.5.2. https://CRAN.R-project.org/package=flexdashboard
+ 
+[11] Roland Krasser (2021). explore: Simplifies Exploratory Data Analysis. R package version 0.7.0.
+  https://CRAN.R-project.org/package=explore 
+  
+[12] Sam Firke (2021). janitor: Simple Tools for Examining and Cleaning Dirty Data. R package version 2.1.0.
+  https://CRAN.R-project.org/package=janitor
+
+[13] Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686,
+  https://doi.org/10.21105/joss.01686
+
+[14] Yihui Xie (2020). bookdown: Authoring Books and Technical Documents with R Markdown. R package version 0.21.
+
+[15] Yihui Xie (2021). tinytex: Helper Functions to Install and Maintain TeX Live, and Compile LaTeX Documents. R package
+  version 0.31.
+  
+# Data Sources
+[1] Bureau of Infrastructure and Transport Research Economics (2021). Australian Easter road deaths. From
+https://data.gov.au/dataset/ds-dga-75870058-66e5-4115-9ece-80d1e46b39e5/details?q=
+
+[2] Bureau of Infrastructure and Transport Research Economics (2021). Australian Christmas road deaths. From
+https://data.gov.au/dataset/ds-dga-1a64f7f7-f200-49ca-806c-543c23ae5374/details?q=
+
+[3] Bureau of Infrastructure and Transport Research Economics (2020). Australian Random Breath Test. From
+https://data.gov.au/dataset/ds-dga-a814a8c5-ef57-463c-9c8b-a6e625bfb860/details?q=
+
+[4] Bureau of Infrastructure and Transport Research Economics (2020). Australian Roadside Drug Testing. From
+https://data.gov.au/dataset/ds-dga-2b299428-c626-4446-88ef-54930b8a5e9b/details?q=
+
+[5] Bureau of Infrastructure and Transport Research Economics (2020). Australian Road Deaths Database. From
+https://data.gov.au/dataset/ds-dga-5b530fb8-526e-4fbf-b0f6-aa24e84e4277/details?q=
