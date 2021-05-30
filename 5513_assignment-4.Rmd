@@ -20,7 +20,7 @@ author:
   correspondingauthor: true
   qualifications:  Masters In Business Analytics (Student)
 department: ETC_Assignment_4\newline Arpan Sarkar &\newline Xinyi Cui &\newline Yalong Liu
-organization: World Bank Group
+organization: MONASH UNIVERSITY
 linestretch: 1.5
 output:
   bookdown::pdf_document2:
