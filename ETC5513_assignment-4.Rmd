@@ -1,38 +1,53 @@
 ---
-title: "Causes of Road Fatalities"
-subtitle: ETC5513-ASSIGNMENT4
-author: "TEAM_9"
-date: '`r Sys.Date()`'
-output: 
-  bookdown::html_document2:
-    toc: yes
-    toc_float:
-      collapsed: false
-      smooth_scroll: false
+title: "Assignment 4"
+author:
+- familyname: Sarkar
+  othernames: Arpan
+  address: India
+  email: "asar0035@student.monash.edu"
+  correspondingauthor: true
+  qualifications: Masters In Business Analytics (Student) 
+- familyname: Cui
+  othernames: Xinyi
+  address: China
+  email: "xcui0006@student.monash.edu"
+  correspondingauthor: true
+  qualifications: Masters In Business Analytics (Student) 
+- familyname: Liu
+  othernames: Yalong
+  address: China
+  email: "yliu0406@student.monash.edu"
+  correspondingauthor: true
+  qualifications:  Masters In Business Analytics (Student)
+department: Business Growth Hackers\newline Arpan Sarkar &\newline Xinyi Cui &\newline Yalong Liu
+organization: World Bank Group
+bibliography: references.bib
+biblio-style: authoryear-comp
+linestretch: 1.5
+output:
+  bookdown::pdf_document2:
+    template: monashreport2.tex
     fig_caption: yes
     fig_height: 5
-    fig_width: 8  
-    css: monashreport.css
+    fig_width: 8
     includes:
-      before_body: header.html
+      in_header: preamble.tex
+    keep_tex: yes
+    number_sections: yes
+    citation_package: biblatex
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, eval = TRUE)
+```
 
+```{r loading-packages}
 library(tidyverse)
 library(plotly)
 library(broom)
 library(ggResidpanel)
 library(kableExtra)
-library(readr)
-library(bookdown)
-library(naniar)
-library(tinytex)
-library(explore)
-library(janitor)
-library(dplyr)
-library(rlang)
 ```
 
 # Introduction
