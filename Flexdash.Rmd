@@ -284,9 +284,9 @@ What is the trend of drug tests conducted from 2007 to 2017 and which state has 
 gg1<-ggplot(drug_test2, aes(x =year , y = test_and_results_count, color=test_and_results)) + 
   geom_line()+
   geom_point()+
-  labs(color="test_results",y="drug_tests_count")+
+  labs(color="test_results",y="Dug_tests_count", x="Year")+
   scale_color_manual(values = c("#9565a1","#ed1cb9","#edca1c"))+
-  ggtitle("Figure1 Count Of Drug Tests And Positive Results")+
+  ggtitle("Count of drug tests and positive results")+
   theme_bw()
 gg4<-ggplotly(gg1)
 
@@ -296,8 +296,8 @@ drug_test4<-drug_test1%>%group_by(year, state)%>% summarise(deaths= mean(deaths,
 gg2<-ggplot(drug_test4, aes(x =year, y = deaths, color=state)) + 
   geom_line()+
   geom_point()+
-  labs(y="deaths")+
-  ggtitle("Figure 2 Deaths In Five States Of Australia")+
+  labs(y="Deaths", x="Year")+
+  ggtitle("Deaths in five states of Australia")+
   theme_bw()
 gg5<-ggplotly(gg2) 
 
@@ -305,7 +305,8 @@ gg5<-ggplotly(gg2)
 gg3<-ggplot(drug_test1, aes(x=year,y=positive_drug_test , color=state)) + 
   geom_line()+
   geom_point()+
-  ggtitle("Figure 3 Positive Results In Five States Of Australia")+
+  labs(y="Positive_drug_test", x="Year")+
+  ggtitle("Positive results in five states Of Australia")+
   theme_bw()
 gg6<-ggplotly(gg3)  
 
@@ -323,16 +324,11 @@ gg6<-ggplotly(gg3)
 gg4
 ```
 
-
-
-
-
-
-
 ### Deaths In Five States Of Australia
 ```{r}
 gg5
 ```
+
 ### Positive Results In Australia
 ```{r}
 gg6
@@ -348,7 +344,7 @@ tab1<-drug_test1%>%group_by(state,year)%>%summarise(avg_road_side_drug_test=mean
 ggmod<-ggplot(tab1, aes(x = avg_positive_drug_test, y =avg_deaths)) +
   geom_point()+
   geom_smooth(method ='loess', color= "green")+
-  labs(x="positive_drug_test", y="deaths")+
+  labs(x="Positive_drug_test", y="Deaths")+
   theme_bw()
 
 ggplotly(ggmod)
@@ -390,40 +386,27 @@ Column {.sidebar}
 -----------------------------------------------------------------------
 **Highlights**
 
-* **Figure 1** drawn with year wise data of drug testing and positive cases. The diagram is drawn with data of all states combined. The following observations worth noticing.
+- **Figure 1** drawn with year wise data of drug testing and positive cases. The diagram is drawn with data of all states combined. The following observations worth noticing.
 
-* Number of tests started declining from **33000 in 2010 to 20000 in 2012**. For two more years, the level of tests maintained as about **20000 tests / year**.
+- Number of tests started declining from **33000** in 2010 to **20000** in 2012. For two more years, the level of tests maintained as about **20000 tests / year**.
 
-* From **2014** number of tests was increased gradually and in **2018**
-reached the level of **50000 / year**.
+- From 2014 number of tests was increased gradually and in 2018 reached the level of **50000 / year**.
 
-* The positive cases fond to be minimal till **2014**. Thereafter it
-gradually started rising almost in the same proportion to that of the
-tests undertaken and reached about **6000 / year** in 2018.
+- The positive cases fond to be minimal till 2014. Thereafter it gradually started rising almost in the same proportion to that of the tests undertaken and reached about **6300 / year** in 2018.
 
-* **Figure-3** is drawn with year wise positive cases for the states separately
-and **Figure-2** is drawn with year wise deaths occurring for states
-separately.
+**Interpretation of figure 2 and 3**
 
-* **ACT** has minimum (only a few) drug-positive cases over the years
-although it shows a little rising after **2014 till 2018**. It maintained
-single digit death count all along from **2014 to 2018** and in line with it
-low positive drug cases.
-* **Tas** recorded another low (but higher than ACT) in drug positive
-count since **2007 to 2012** and thereafter rose to as high as **2200 in 2015** and maintained almost same rate till 2018. Death cases fell from **19 in 2007** to about **1-2 in 2012**, then rose to **9 in 2014** but fell sharply to zero in **2015** and then rose to **10 in 2016** and fell to single
-digit in **2018**.
-* **SA** positive cases rose almost diagonally till **201 to 5000+** and then it
-decreased to about **4500 in 2016** and then again rose to 5000+ in 2018. SA has shown the death count as between **10 to 21** through out with a **rise-fall-rise-fall** pattern all along.
-* **NSW** maintained almost similar pattern as lie **TAS from 2010 to 2012**
-and then started rising and reached the peak with **9500 cases in 2015**. Positive cases got reduced for 2016 but rose to the high value of **9500** in next year i.e., 2017. The state recorded maximum death count. From **55 in 2010 to 40 in 2011 to 54 in 2013** to suddenly rose to above **80 in 2016, but by 2018 the figure is reduced to 70**.
+- Australian Capital Territory has minimum (only a few) drug-positive cases over the years although it shows a little rising after 2014 till 2018. It maintained single digit death count all along from 2014 to 2018 and in line with it low positive drug cases.
 
-* **QLD** showing very exceptional result. From almost zero in 2009, it
-rose gradually to 2014 and then started rising very sharply to just
-below **30000 in 2018**. The lowest (almost zero all along) death cases
-recorded by the state is a great achievement by the state despite
-having the highest drug-positive cases.
+- Tasmania recorded another low (but higher than ACT) in drug positive count since 2007 to 2012 and thereafter rose to as high as **2200** in 2015 and maintained almost same rate till 2018. Death cases fell from **19** in 2007 to about **4** in 2012, then rose to **8** in 2014 but fell sharply to zero in 2015 and then rose to 10 in 2016 and fell to single digit in 2018.
 
-* The **table** generated to show the state wise consolidated data like number
+- SA positive cases rose almost diagonally till **600** to **5000+** and then it decreased to about **4300** in 2016 and then again rose to **5000+** in 2018. SA has shown the death count as between 10 to 21 through out with a **rise-fall-rise-fall** pattern all along.
+
+- NSW maintained almost similar pattern as lie TAS from 2010 to 2012 and then started rising and reached the peak with **9123** cases in 2015. Positive cases got reduced for 2016 but rose to the high value of **9273** in next year i.e., 2017. The state recorded maximum death count. From 53 in 2010 to **42** in 2011 to **52** in 2013 to suddenly rose to above **80** in 2016, but by 2018 the figure is reduced to **70**.
+
+- QLD showing very exceptional result. From almost zero in 2009, it rose gradually to 2014 and then started rising very sharply to just below **15000** in 2018. The lowest (almost zero all along) death cases recorded by the state is a great achievement by the state despite having the highest drug-positive cases.
+
+- The **table** generated to show the state wise consolidated data like number
 of tests, positive cases and average death cases for getting a
 view of overall status.
 
