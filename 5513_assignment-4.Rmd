@@ -383,7 +383,7 @@ rename("Number_of_crash" = "Number.of.deaths.from.crashes.involving.a.driver.or.
        "Number_of_death" = "Number.of.drivers.and.motorcycle.riders.killed.with.a.blood.alcohol.concentration..BAC..above.the.legal.limit")
 ```
 
-```{r Overview-of-postiveRBT-by-state, echo=FALSE}
+```{r Overview-of-postiveRBT-by-state, echo=FALSE, fig.cap= "Positive RBT in Australia"}
 p1<- ggplot(alcohol, aes(x = Year, y = Positive.RBT, group = State))+
   geom_line(aes(color=State))+
   geom_point(aes(color=State)) +
@@ -393,7 +393,7 @@ p1<- ggplot(alcohol, aes(x = Year, y = Positive.RBT, group = State))+
 ggplotly(p1)
 ```
 
-The first graph presents the positive random breath test (RBT) test result from 2008 to 2019 for each state and territory in Australia. 
+The graph \@ref(fig:Overview-of-postiveRBT-by-state) presents the positive random breath test (RBT) test result from 2008 to 2019 for each state and territory in Australia. 
 
 - The highest positive RBT result was in 2010 **Queensland** of 33638 positive results. 
 
@@ -406,7 +406,7 @@ The first graph presents the positive random breath test (RBT) test result from 
 
 
 ## RBT ratio for each state
-```{r RBT-ratio-by-state, echo=FALSE}
+```{r RBT-ratio-by-state, echo=FALSE, fig.cap= "RBT ratio"}
 ratio <- alcohol %>% 
   mutate(RBT_ratio = Positive.RBT /RBT.conducted *100)  
 
@@ -419,7 +419,7 @@ p2<- ggplot(ratio, aes(x = Year, y = RBT_ratio, group = State))+
 ggplotly(p2)
 ```
 
-The second graph illustrates the positive RBT ratio for each state and territory in Australia from 2008 to 2019. RBT ratio is calculated by the number of positive RBT divided by the total number of RBT conducted.
+The graph \@ref(fig:RBT-ratio-by-state) illustrates the positive RBT ratio for each state and territory in Australia from 2008 to 2019. RBT ratio is calculated by the number of positive RBT divided by the total number of RBT conducted.
 
 - Queensland is no longer the highest in this figure while the **Northern Territory** have the highest positive RBT ratio for the past 13 years. 
 
