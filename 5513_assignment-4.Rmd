@@ -5,6 +5,7 @@ author: "TEAM_9"
 date: '`r Sys.Date()`'
 output: 
   bookdown::html_document2:
+    self_contained: no
     toc: yes
     toc_float:
       collapsed: false
@@ -52,8 +53,8 @@ These are the research questions we analysis:
 3. What is the trend of positive RBT conducted from 2008 to 2019 and the relationship between positive RBT and number of death?
 
 
-
 # Finding the trend of road fatalities in Australia and the comparison of fatalities on special holidays (Yalong Liu)
+
 ```{r reading-data, echo = FALSE, message = FALSE, warning = FALSE}
 crashes_raw <- read_csv("data/ardd_fatalcrashes_mar2021.csv" )
 christmas_raw <- read_csv("data/australian_christmas_road_deaths.csv") 
@@ -61,6 +62,7 @@ easter_raw <- read_csv("data/australian_easter_road_deaths_2021.csv")
 ```
 
 ## Trend
+
 ```{r crashes_tidy, echo = FALSE, message = FALSE, warning = FALSE}
 crashes_tidy <- crashes_raw %>%
   select(`Crash ID`, State, Year, Dayweek, `Number Fatalities`, 
@@ -73,7 +75,7 @@ crashes_trend <- crashes_tidy %>%
   summarise(`Number Fatalities` = sum(`Number Fatalities`, na.rm = TRUE))
 ```
 
-```{r}
+```{r f1, fig.align = "center", fig.cap= "Trend of road fatalities"}
 f1 <- crashes_trend %>%
   ggplot(aes(x = Year, 
              y = `Number Fatalities`,
@@ -90,11 +92,11 @@ f1 <- crashes_trend %>%
   ggplotly(f1)
 ```
 
-Findings:
+Findings in Figure \@ref(fig:f1):
 
-- New South Wales has always been the state with the highest number of road deaths. 
+- **New South Wales** has always been the state with the highest number of road deaths. 
 
-- The reason of a sharp drop in the number of fatalities in New South Wales and Victoria from 1989 to 1992 is two states successively promulgated regulations on blood alcohol concentration of 0.05. 
+- The reason of two sharp drops in the number of fatalities in New South Wales and Victoria from **1989** to **1992** is two states successively promulgated regulations on **blood alcohol concentration of 0.05**. 
 
 - States in remote areas have far fewer fatalities than states with large concentrations of cities.
 
@@ -115,8 +117,10 @@ crashe_f <- crashes_tidy %>%
 
 cf <- left_join(crashe_c, crashe_f) %>%
   pivot_longer(cols = -c(States, Year), names_to = "Types", values_to = "Number")
+```
 
-cf %>%
+```{r f2, fig.align = "center", fig.cap= "Crashes and fatalities"}
+f2 <- cf %>%
   group_by(States, Year, Types) %>%
   ggplot(aes(x = Year,
                  y = Number,
@@ -128,13 +132,14 @@ cf %>%
   labs(title = "Comparison of the number of crashes and fatalities in each state",
        legend.position='dodge') +
   scale_color_brewer(palette = "Set2") 
+  f2
 ```
 
-Findings:
+Findings in Figure \@ref(fig:f2):
 
-- There is no significant difference.
+- There is **no significant difference** between the number of crashes and fatalities.
 
-- More practical cases are that only one person died in a crash.
+- More practical cases are that **one collision** only results in **one death**.
 
 
 ## Road fatalities in 2020
@@ -154,9 +159,11 @@ dfChristmas <- ce_count[which(ce_count$Festival == "Christmas"),] %>%
   select(-Festival) %>%
   rename(Christmas = Count)
 dfEaster <- ce_count[which(ce_count$Festival == "Easter"),] %>%
-    select(-Festival) %>%
+  select(-Festival) %>%
   rename(Easter = Count)
+```
 
+```{r t1}
 ce_join <- left_join(dfChristmas, dfEaster) %>%
   filter(Year == "2020") %>%
   select(-Year)
@@ -166,10 +173,13 @@ ce_join <- left_join(dfChristmas, dfEaster) %>%
   kable_styling(latex_options = c("striped", "hold_position"))
 ```
 
-Findings:
-- The highest number is 9 in Christmas in Queensland. 
+Findings in Table \@ref(tab:t1):
 
-- In the states with more main cities, the number of deaths during the 12-day Christmas holiday is more than double the number during the five-day Easter holiday.
+- **Queensland** has the highest number of road deaths in 2020 at **9**. 
+
+- There are very few deaths in the **remote states**.
+
+- In the states with more main cities, the number of deaths during the 12-day Christmas holiday is more than double the number during the 5-day Easter holiday.
 
 
 ## Festivals & Ordinary days
@@ -199,7 +209,9 @@ all_mean <- all_total %>%
   pivot_longer(cols = -Year,
                names_to = "Types",
                values_to = "Count") 
+```
 
+```{r f3, fig.align = "center", fig.cap= "Festivals and weekdays"}
 f3 <- all_mean %>%
   ggplot(aes(x = Year,
              y = Count,
@@ -213,15 +225,15 @@ f3 <- all_mean %>%
   ggplotly(f3)
 ```
 
-Findings:
+Findings in Figure \@ref(fig:f3):
 
 - Holiday deaths are not entirely higher than weekday deaths.
 
-- The number of deaths on special festivals in more years is greater than usual.
+- The number of deaths on **special festivals** in more years is greater than usual.
 
-- The maximum number of deaths in a single day will not exceed 4.
+- The maximum number of deaths in a single day will not exceed **4**.
 
-- The number of road deaths on Christmas and Easter in 2020 is significantly lower than in 2019.
+- The number of road deaths on Christmas and Easter in **2020** is significantly lower than in **2019**.
 
 
 # What is the trend of drug tests conducted from 2010 to 2018 and which state has the maximum number of road fatalities due to drug consumption? (Arpan Sarkar)
