@@ -284,7 +284,7 @@ What is the trend of drug tests conducted from 2007 to 2017 and which state has 
 gg1<-ggplot(drug_test2, aes(x =year , y = test_and_results_count, color=test_and_results)) + 
   geom_line()+
   geom_point()+
-  labs(color="test_results",y="Dug_tests_count", x="Year")+
+  labs(color="test_results",y="Drug_tests_count", x="Year")+
   scale_color_manual(values = c("#9565a1","#ed1cb9","#edca1c"))+
   ggtitle("Count of drug tests and positive results")+
   theme_bw()
