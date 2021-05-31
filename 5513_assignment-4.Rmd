@@ -306,7 +306,7 @@ gg6<-ggplotly(gg3)
 
 ## Drug Test Results Trend
 
-```{r g2g4, fig.align = "center", fig.width = 6,fig.cap= "Trend of drug test and +ve results"}
+```{r g2g4, fig.width = 6,fig.cap= "Trend of drug test and +ve results"}
 gg4
 ```
 
