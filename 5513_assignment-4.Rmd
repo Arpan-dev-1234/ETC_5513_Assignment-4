@@ -324,7 +324,7 @@ gg4
 subplot(gg6,style(gg5,showlegend=F) ,nrows = 2,titleY = T, titleX = T, margin = 0.14)
 ```
 
-The following points can be made from above Figure:\@ref(fig:subplot)
+The following points can be made from above Figure \@ref(fig:subplot):
 
 - Australian Capital Territory has minimum (only a few) drug-positive cases over the years although it shows a little rising after 2014 till 2018. It maintained single digit death count all along from 2014 to 2018 and in line with it low positive drug cases.
 
