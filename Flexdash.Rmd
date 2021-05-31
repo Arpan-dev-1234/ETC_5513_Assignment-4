@@ -60,7 +60,7 @@ These are the research questions we analysis:
 
 ***
 
-**TEAM MEMBERS**
+**TEAM MEMBERS (Team 9)**
 
 |Name	          |Email Id	                  |Student Id|
 |---------------|:-------------------------:|----------|
@@ -228,13 +228,12 @@ all_mean <- all_total %>%
 all_mean %>%
   ggplot(aes(x = Year,
              y = Count,
-             color = Types)) +
-  geom_line(size = 1.5) +
-  geom_point(size = 4) +
+             fill = Types)) +
+  geom_col() +
   labs(title = "Comparison of the road fatalities between festivals and weekdays",
        y = "Number (per day)",
        legend.position='dodge') +
-  scale_color_brewer(palette = "Set2") +
+  scale_fill_brewer(palette = "Set2") +
   scale_x_continuous(breaks=seq(2008, 2020, 2))
   ggplotly()
 ```
